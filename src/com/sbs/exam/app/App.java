@@ -8,7 +8,6 @@ import com.sbs.exam.Util.Util;
 import com.sbs.exam.app.dto.Article;
 
 
-
 public class App {
 	public static void run() {
 		System.out.println("== 텍스트 게시판 시작 ==");
@@ -23,8 +22,8 @@ public class App {
 			article.id = articlesLastId + 1;
 			article.regDate = Util.getNowDateStr();
 			article.updateDate = Util.getNowDateStr();
-			article.title = "제목_" + article.id;
-			article.body = "내용_" + article.id;
+			article.title = "제목 " + article.id;
+			article.body = "내용 " + article.id;
 			articles.add(article);
 			articlesLastId++;
 		}
@@ -34,10 +33,17 @@ public class App {
 
 			String command = sc.nextLine().trim();
 
-			if (command.equals("/usr/article/write")) {
-				System.out.printf("제목: ");
+			Rq rq = new Rq(command);
+
+			if (rq.isValid == false) {
+				System.out.printf("명령어가 올바르지 않습니다.\n");
+				continue;
+			}
+
+			if (rq.getActionPath().equals("/usr/article/write")) {
+				System.out.printf("제목 : ");
 				String title = sc.nextLine().trim();
-				System.out.printf("내용: ");
+				System.out.printf("내용 : ");
 				String body = sc.nextLine().trim();
 
 				Article article = new Article();
@@ -51,7 +57,7 @@ public class App {
 				articlesLastId++;
 
 				System.out.printf("%d번 게시물이 생성되었습니다.\n", article.id);
-			} else if (command.equals("/usr/article/list")) {
+			} else if (rq.getActionPath().equals("/usr/article/list")) {
 				System.out.printf("번호 / 작성날자 / 제목\n");
 
 				for (int i = articles.size() - 1; i >= 0; i--) {
@@ -59,10 +65,10 @@ public class App {
 					System.out.printf("%d / %s / %s\n", article.id, article.regDate, article.title);
 				}
 
-			} else if (command.equals("/usr/system/exit")) {
-				System.out.println("프로그램을 종료합니다.");
+			} else if (rq.getActionPath().equals("/usr/system/exit")) {
+				System.out.println("프로그램을 종료 합니다.");
 				break;
-			} else if (command.startsWith("/usr/article/detail")) {
+			} else if (rq.getActionPath().equals("/usr/article/detail")) {
 				String queryString = command.split("\\?", 2)[1];
 				String[] queryStringBits = queryString.split("&");
 
@@ -103,7 +109,7 @@ public class App {
 				System.out.printf("제목 : %s\n", foundArticle.title);
 				System.out.printf("내용 : %s\n", foundArticle.body);
 
-			} else if (command.startsWith("/usr/article/delete")) {
+			} else if (rq.getActionPath().equals("/usr/article/delete")) {
 				String queryString = command.split("\\?", 2)[1];
 				String[] queryStringBits = queryString.split("&");
 
@@ -142,8 +148,8 @@ public class App {
 
 				System.out.printf("%d번 게시물을 삭제하였습니다.\n", id);
 
-			} else if (command.equals("/usr/system/exit")) {
-				System.out.println("프로그램을 종료합니다.");
+			} else if (rq.getActionPath().equals("/usr/system/exit")) {
+				System.out.println("프로그램을 종료 합니다.");
 				break;
 			}
 		}
