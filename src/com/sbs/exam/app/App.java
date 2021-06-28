@@ -9,21 +9,27 @@ import com.sbs.exam.app.dto.Article;
 
 
 public class App {
-	public static void run() {
+	Scanner sc;
+	List<Article> articles;
+	int articlesLastId;
+	
+	App () {
+		sc = new Scanner(System.in);
+		articles = new ArrayList<>();
+		articlesLastId = 0;
+	}
+	
+	public void run() {
+		
 		System.out.println("== 텍스트 게시판 시작 ==");
-
-		Scanner sc = new java.util.Scanner(System.in);
-
-		List<Article> articles = new ArrayList<>();
-		int articlesLastId = 0;
 
 		for (int i = 0; i < 10; i++) {
 			Article article = new Article();
 			article.id = articlesLastId + 1;
 			article.regDate = Util.getNowDateStr();
 			article.updateDate = Util.getNowDateStr();
-			article.title = "제목 " + article.id;
-			article.body = "내용 " + article.id;
+			article.title = "제목_" + article.id;
+			article.body = "내용_" + article.id;
 			articles.add(article);
 			articlesLastId++;
 		}
@@ -58,7 +64,7 @@ public class App {
 
 				System.out.printf("%d번 게시물이 생성되었습니다.\n", article.id);
 			} else if (rq.getActionPath().equals("/usr/article/list")) {
-				System.out.printf("번호 / 작성날자 / 제목\n");
+				System.out.printf("번호 / 작성날짜 / 제목\n");
 
 				for (int i = articles.size() - 1; i >= 0; i--) {
 					Article article = articles.get(i);
@@ -69,34 +75,14 @@ public class App {
 				System.out.println("프로그램을 종료 합니다.");
 				break;
 			} else if (rq.getActionPath().equals("/usr/article/detail")) {
-				String queryString = command.split("\\?", 2)[1];
-				String[] queryStringBits = queryString.split("&");
-
-				int id = 0;
-
-				for (String queryStringBit : queryStringBits) {
-					String[] queryStringBitBits = queryStringBit.split("=", 2);
-					String paramName = queryStringBitBits[0];
-					String paramValue = queryStringBitBits[1];
-
-					if (paramName.equals("id")) {
-						id = Integer.parseInt(paramValue);
-					}
-				}
+				int id = rq.getIntParam("id", 0);
 
 				if (id == 0) {
 					System.out.println("id를 입력해주세요.");
 					continue;
 				}
 
-				Article foundArticle = null;
-
-				for (Article article : articles) {
-					if (article.id == id) {
-						foundArticle = article;
-						break;
-					}
-				}
+				Article foundArticle = getArticleById(id);
 
 				if (foundArticle == null) {
 					System.out.printf("%d번 게시물은 존재하지 않습니다.\n", id);
@@ -110,35 +96,15 @@ public class App {
 				System.out.printf("내용 : %s\n", foundArticle.body);
 
 			} else if (rq.getActionPath().equals("/usr/article/delete")) {
-				String queryString = command.split("\\?", 2)[1];
-				String[] queryStringBits = queryString.split("&");
-
-				int id = 0;
-
-				for (String queryStringBit : queryStringBits) {
-					String[] queryStringBitBits = queryStringBit.split("=", 2);
-					String paramName = queryStringBitBits[0];
-					String paramValue = queryStringBitBits[1];
-
-					if (paramName.equals("id")) {
-						id = Integer.parseInt(paramValue);
-					}
-				}
+				int id = rq.getIntParam("id", 0);
 
 				if (id == 0) {
 					System.out.println("id를 입력해주세요.");
 					continue;
 				}
 
-				Article foundArticle = null;
-
-				for (Article article : articles) {
-					if (article.id == id) {
-						foundArticle = article;
-						break;
-					}
-				}
-
+				Article foundArticle = getArticleById(id);
+				
 				if (foundArticle == null) {
 					System.out.printf("%d번 게시물은 존재하지 않습니다.\n", id);
 					continue;
@@ -147,6 +113,29 @@ public class App {
 				articles.remove(foundArticle);
 
 				System.out.printf("%d번 게시물을 삭제하였습니다.\n", id);
+
+			} else if (rq.getActionPath().equals("/usr/article/modify")) {
+				int id = rq.getIntParam("id", 0);
+
+				if (id == 0) {
+					System.out.println("id를 입력해주세요.");
+					continue;
+				}
+
+				Article foundArticle = getArticleById(id);
+				
+				if (foundArticle == null) {
+					System.out.printf("%d번 게시물은 존재하지 않습니다.\n", id);
+					continue;
+				}
+
+				System.out.printf("새 제목: ");
+				foundArticle.title = sc.nextLine();
+				System.out.printf("새 내용: ");
+				foundArticle.body = sc.nextLine();
+				foundArticle.updateDate = Util.getNowDateStr();
+				
+				System.out.printf("%d번 게시물을 수정했습니다.\n", id);
 
 			} else if (rq.getActionPath().equals("/usr/system/exit")) {
 				System.out.println("프로그램을 종료 합니다.");
@@ -157,4 +146,13 @@ public class App {
 		System.out.println("== 텍스트 게시판 끝 ==");
 	}
 
+	private Article getArticleById(int id) {
+		
+		for (Article article : articles) {
+			if (article.id == id) {
+				return article;
+			}
+		}
+		return null;
+	}
 }
