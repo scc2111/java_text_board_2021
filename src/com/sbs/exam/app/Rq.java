@@ -3,18 +3,29 @@ package com.sbs.exam.app;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sbs.exam.app.container.Container;
+import com.sbs.exam.app.dto.Member;
+
+import lombok.Getter;
+
 public class Rq {
 	private Map<String, String> params;
 	private String command;
-	private String controllerTypeName;
+	@Getter
+	private String controllerTypeCode;
+	@Getter
 	private String controllerName;
 	private String actionMethodName;
 	private String queryString = "";
-	public boolean isValid = true;
+	@Getter
+	private boolean isValid = true;
 
-	public Rq(String command) {
+	public Rq() {
+	}
+
+	public void setCommand(String command) {
 		this.command = command;
-		
+
 		params = new HashMap<>();
 
 		String[] commandBits = command.split("\\?", 2);
@@ -28,7 +39,7 @@ public class Rq {
 				String[] queryStringBitBits = queryStringBit.split("=", 2);
 				String paramName = queryStringBitBits[0];
 				String paramValue = queryStringBitBits[1];
-				
+
 				params.put(paramName, paramValue);
 			}
 		}
@@ -40,26 +51,65 @@ public class Rq {
 			return;
 		}
 
-		controllerTypeName = commandBits[1];
+		controllerTypeCode = commandBits[1];
 		controllerName = commandBits[2];
 		actionMethodName = commandBits[3];
 	}
 
-	public Object getActionPath() {
-		return "/" + controllerTypeName + "/" + controllerName + "/" + actionMethodName;
+	public String getActionPath() {
+		return "/" + controllerTypeCode + "/" + controllerName + "/" + actionMethodName;
 	}
 
 	public int getIntParam(String paramName, int defaultValue) {
-		if(params.containsKey(paramName) == false) {
+		if (params.containsKey(paramName) == false) {
 			return defaultValue;
 		}
-		
-		try  {
-			return Integer.parseInt(params.get(paramName));			
-		}
-		catch ( NumberFormatException e ) {
+
+		try {
+			return Integer.parseInt(params.get(paramName));
+		} catch (NumberFormatException e) {
 			return defaultValue;
 		}
+	}
+
+	private void setSessionAttr(String key, Object value) {
+		Session session = Container.getSession();
+
+		session.setAttribute(key, value);
+	}
+
+	private Object getSessionAttr(String key) {
+		Session session = Container.getSession();
+
+		return session.getAttribute(key);
+	}
+
+	private void removeSessionAttr(String key) {
+		Session session = Container.getSession();
+
+		session.removeAttribute(key);
+	}
+
+	private boolean hasSessionAttr(String key) {
+		Session session = Container.getSession();
+
+		return session.hasAttribute(key);
+	}
+
+	public Member getLoginedMember() {
+		return (Member) getSessionAttr("loginedMember");
+	}
+
+	public boolean isLogined() {
+		return hasSessionAttr("loginedMember");
+	}
+
+	public void logout() {
+		removeSessionAttr("loginedMember");
+	}
+
+	public void login(Member member) {
+		setSessionAttr("loginedMember", member);
 	}
 
 }
