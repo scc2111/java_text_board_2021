@@ -3,8 +3,8 @@ package com.sbs.exam.app.repository;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sbs.exam.app.dto.Member;
 import com.sbs.exam.Util.Util;
+import com.sbs.exam.app.dto.Member;
 
 public class MemberRepository {
 
@@ -32,6 +32,16 @@ public class MemberRepository {
 	public Member getMemberByLoginId(String loginId) {
 		for ( Member member : members ) {
 			if ( member.getLoginId().equals(loginId) ) {
+				return member;
+			}
+		}
+
+		return null;
+	}
+	
+	public Member getMemberById(int id) {
+		for ( Member member : members ) {
+			if ( member.getId() == id ) {
 				return member;
 			}
 		}
